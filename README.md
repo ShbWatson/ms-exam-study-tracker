@@ -36,7 +36,7 @@ Fabric App: MS Exam Study Tracker  ◀──▶  App database: your progress (My
 ## What you need
 
 - A **Microsoft Fabric workspace** on a capacity where **Fabric Apps (preview)** is available, and permission to create items in it.
-- **Node.js 22.13 or later** and **Git** on your computer.
+- **Node.js 22 or 24 (LTS)** and **Git** on your computer. Newer Node versions work but print an "unsupported engine" warning.
 - About 20 minutes.
 
 ## Set it up in your own Fabric workspace
@@ -47,7 +47,7 @@ In Fabric, create a workspace for the app, for example **Exam Study Tracker**. R
 
 ### 2. Create the lakehouse
 
-In that workspace, select **New item → Lakehouse** and name it **ExamCatalog**.
+In that workspace, select **New item → Lakehouse** and name it **ExamCatalog**. The **Lakehouse schemas** option can stay on.
 
 ### 3. Load the exam skills with the notebook
 
@@ -65,34 +65,45 @@ cd ms-exam-study-tracker
 npm install
 ```
 
-If `npm install` stops with a peer dependency (`ERESOLVE`) error, run `npm install --legacy-peer-deps` instead.
+`npm install` prints a few warnings (deprecated packages, `npm audit` findings, install scripts). They come from the Fabric Apps template's tooling and are safe to ignore. Don't run `npm audit fix --force`; it can upgrade packages to versions that break the app. If `npm install` stops with a peer dependency (`ERESOLVE`) error, run `npm install --legacy-peer-deps` instead.
 
 ### 5. Connect the app to your lakehouse
 
-The app reads the exam list through a read-only connector. Its settings live in [`rayfin/rayfin.yml`](rayfin/rayfin.yml), which points at two values you keep in `rayfin/.env`. That file is ignored by git, so your IDs never end up on GitHub.
+The app reads the exam list through a read-only connector to the lakehouse's **SQL analytics endpoint**. Its settings live in [`rayfin/rayfin.yml`](rayfin/rayfin.yml), which points at two values you keep in `rayfin/.env`. That file is ignored by git, so your IDs never end up on GitHub.
 
-1. In Fabric, open your **ExamCatalog** lakehouse. The address bar looks like this:
+> [!IMPORTANT]
+> The connector needs the ID of the **SQL analytics endpoint**, not the lakehouse. Fabric creates both when you create the lakehouse, with the same name (ExamCatalog) and different IDs. Using the lakehouse ID makes the deploy fail with "Source attachment failed".
 
-   ```text
-   https://app.fabric.microsoft.com/groups/<workspace ID>/lakehouses/<lakehouse ID>?...
+1. **Find the SQL analytics endpoint ID.** In the SyncExamStudyGuides notebook, add a cell and run:
+
+   ```python
+   import sempy.fabric as fabric
+
+   display(fabric.list_items(type="SQLEndpoint"))
    ```
 
-2. Create a file named `.env` in the `rayfin` folder (there's a sample in [`rayfin/env.example`](rayfin/env.example)) and add your two IDs:
+   Copy the **Id** of the row whose **Display Name** is **ExamCatalog**. After your first deploy, the list also shows a row named after your app; that one is the app's own database, so ignore it. The **Workspace Id** column has your workspace ID.
+
+2. **Create `rayfin/.env`.** Create a file named `.env` in the `rayfin` folder (there's a sample in [`rayfin/env.example`](rayfin/env.example)) and add your two IDs, with no quotes or spaces:
 
    ```ini
-   CATALOG_WORKSPACE_ID=<workspace ID>
-   CATALOG_LAKEHOUSE_ID=<lakehouse ID>
+   CATALOG_WORKSPACE_ID=<Workspace Id>
+   CATALOG_SQL_ENDPOINT_ID=<ExamCatalog SQL endpoint Id>
    ```
+
+   On Windows, `notepad rayfin\.env` creates and opens it.
 
 The Rayfin CLI also writes its own settings to `rayfin/.env` when you deploy. It keeps your two lines.
 
 ### 6. Deploy to Fabric
 
 ```bash
-npx rayfin up --item-name "MS Exam Study Tracker" --workspace "Exam Study Tracker"
+npm run rayfin:up -- --item-name "MS Exam Study Tracker" --workspace "Exam Study Tracker"
 ```
 
-Use your own workspace name if it's different. The first run asks you to sign in to Fabric, then creates the app in your workspace and gives you its address. Run the same command again to deploy later changes.
+Use your own workspace name if it's different. `npm run rayfin:up` runs this project's own copy of the Rayfin CLI (the `--` passes the rest to it), so an older Rayfin CLI installed globally on your computer can't get in the way.
+
+The first run asks you to sign in to Fabric, then creates the app in your workspace and prints its address ("Your app is live at …"). At the end, check that the component results say **`connectors: success`**. Run the same command again to deploy later changes.
 
 ### 7. Try it locally (optional)
 
@@ -120,7 +131,7 @@ The About page (the **About** link in the header) is about me, the person who bu
 │   └── SyncExamStudyGuides.ipynb       # Reads the study guides into the ExamCatalog lakehouse
 ├── rayfin/
 │   ├── rayfin.yml                      # App services and the read-only "catalog" connector
-│   ├── env.example                     # Sample for rayfin/.env (your IDs go there)
+│   ├── env.example                     # Sample for rayfin/.env (your two IDs go there)
 │   └── connectors/catalog/             # Exams and ExamSkills entities (lakehouse tables)
 ├── packages/
 │   ├── data/                           # App database: MyExam, SkillProgress (owner-only)
@@ -138,12 +149,16 @@ The About page (the **About** link in the header) is about me, the person who bu
 | `npm test` | Runs the tests |
 | `npm run lint` | Checks the code style |
 | `npm run typecheck` | Checks the TypeScript types |
-| `npx rayfin up --item-name "…" --workspace "…"` | Builds and deploys the app to Fabric |
+| `npm run rayfin:up -- --item-name "…" --workspace "…"` | Builds and deploys the app to Fabric |
 
 ## Troubleshooting
 
+- **The app shows "Couldn't load this from Fabric … No schema document exists for this artifact"**: the connector didn't apply. Scroll up in the deploy output; you'll see a `Connector "catalog" apply failed` warning and `connectors: warning`. The usual cause is the next item.
+- **`Connector "catalog" apply failed … Source attachment failed`**: `CATALOG_SQL_ENDPOINT_ID` has the lakehouse ID (or another item's ID) instead of the ExamCatalog SQL analytics endpoint ID. Fix it in `rayfin/.env` (step 5) and run the **full** deploy again (step 6). `rayfin up connector apply` alone doesn't send changed IDs to the app.
+- **`error: unknown option '--item-name'`**: an old Rayfin CLI (1.x) ran instead of the project's copy, usually one installed globally. Check with `npx rayfin --version`. Deploy with `npm run rayfin:up -- …` as in step 6, and remove the old one with `npm uninstall -g @microsoft/rayfin-cli`. If the old CLI already ran in your folder, it may have changed the Rayfin versions in `package.json`; run `git status`, and if `package.json`, `packages/frontend/package.json` or `package-lock.json` show as modified, restore them with `git checkout -- package.json packages/frontend/package.json package-lock.json`, delete `node_modules` and run `npm install` again.
 - **`Environment variable 'CATALOG_WORKSPACE_ID' referenced in rayfin.yml … is not defined`**: create `rayfin/.env` with your two IDs (step 5).
-- **The app opens but shows no exams**: run the notebook (step 3), then refresh the lakehouse's SQL analytics endpoint in Fabric.
+- **`rayfin connector inspect --name catalog` fails with a 400 error**: expected. `inspect` reads `rayfin.yml` without filling in the `${…}` values from `rayfin/.env`. Use the deploy output and the app itself to check the connector instead.
+- **The app opens but shows no exams**: run the notebook (step 3), then open the ExamCatalog SQL analytics endpoint in Fabric and select **Refresh**.
 - **Percentages look garbled (`10â€“15%`)**: you're using an old copy of the notebook. Use the one in this repo, which reads the pages as UTF-8.
 - **The notebook fails on an exam**: Microsoft may have changed that study guide page. The other exams still sync. Check the official study guide, and open an issue here.
 

@@ -26,14 +26,15 @@ services:
     embedded:
       only: false
 connectors:
-  # Read-only connection to the ExamCatalog lakehouse that the
-  # SyncExamStudyGuides notebook fills. The two IDs come from rayfin/.env
-  # (never committed). See "Connect the app to your lakehouse" in README.md.
+  # Read-only connection to the SQL analytics endpoint of the ExamCatalog
+  # lakehouse that the SyncExamStudyGuides notebook fills. The two IDs come
+  # from rayfin/.env (never committed). See "Connect the app to your lakehouse"
+  # in README.md.
   - name: catalog
     type: fabric-sqlanalytics
     config:
       workspaceId: ${CATALOG_WORKSPACE_ID}
-      itemId: ${CATALOG_LAKEHOUSE_ID}
+      itemId: ${CATALOG_SQL_ENDPOINT_ID}
     auth:
       type: application
     operations:
