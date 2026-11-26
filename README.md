@@ -6,6 +6,8 @@ Pick an exam (DP-600, DP-700, DP-800, PL-300, or any other Microsoft exam with a
 
 Built by [Shabnam Watson](https://www.linkedin.com/in/shabnamwatson/) with [Microsoft Fabric Apps](https://learn.microsoft.com/en-us/fabric/apps/overview) (preview).
 
+![Home screen: pick an exam and see your readiness for each one](docs/images/home.png)
+
 ## What it does
 
 - **Exam map.** Each domain is a tile sized by its exam weight, so you can see at a glance where the points are.
@@ -14,6 +16,8 @@ Built by [Shabnam Watson](https://www.linkedin.com/in/shabnamwatson/) with [Micr
 - **Small rewards.** Celebrations when you master a section, a domain or a readiness milestone, plus an optional "study break" panel with clean data and office jokes.
 - **Start over.** Reset all your progress, with an "Are you sure?" check first.
 - **Private progress.** You sign in with your Fabric account, and each person only sees their own progress.
+
+![Exam page: the exam map by domain weight, and each skill with its study status](docs/images/exam.png)
 
 ## How it works
 
