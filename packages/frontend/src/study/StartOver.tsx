@@ -58,8 +58,8 @@ export function StartOver({ onReset }: { onReset: () => void }) {
         onClick={() => setOpen(true)}
         className="inline-flex items-center gap-100 rounded-full border border-border px-300 py-200 text-300 font-semibold text-muted-foreground hover:border-destructive hover:text-destructive focus-visible:outline-2 focus-visible:outline-ring"
       >
-        <RotateCcw className="icon-size-200" aria-hidden />
-        Start over
+        <RotateCcw className="icon-size-300 sm:icon-size-200" aria-hidden />
+        <span className="sr-only sm:not-sr-only">Start over</span>
       </button>
 
       {open && (

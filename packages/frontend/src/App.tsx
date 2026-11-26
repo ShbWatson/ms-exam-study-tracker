@@ -27,12 +27,15 @@ function App() {
           <button
             type="button"
             onClick={goHome}
-            className="inline-flex items-center gap-200 rounded-full font-heading text-400 font-bold focus-visible:outline-2 focus-visible:outline-ring"
+            className="inline-flex items-center gap-200 rounded-full text-left focus-visible:outline-2 focus-visible:outline-ring"
           >
-            <span className="grid size-8 place-items-center rounded-xl bg-primary text-primary-foreground">
+            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
               <GraduationCap className="icon-size-300" aria-hidden />
             </span>
-            Exam Study Tracker
+            <span className="flex flex-col whitespace-nowrap leading-tight">
+              <span className="font-heading text-400 font-bold">Ready, Set, Cert!</span>
+              <span className="text-200 text-muted-foreground">MS Exam Study Tracker</span>
+            </span>
           </button>
           <span className="flex items-center gap-200">
             <button

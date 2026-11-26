@@ -18,6 +18,11 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: /map the exam/i })).toBeInTheDocument();
   });
 
+  it('shows the app name and what it is in the header', () => {
+    render(<App />);
+    expect(screen.getByRole('button', { name: /ready, set, cert!.*ms exam study tracker/i })).toBeInTheDocument();
+  });
+
   it('opens the About page from the header and goes back to the exams', () => {
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: 'About' }));
