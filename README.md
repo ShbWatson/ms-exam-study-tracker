@@ -6,7 +6,10 @@ Pick an exam (DP-600, DP-700, DP-800, PL-300, or any other Microsoft exam with a
 
 Built by [Shabnam Watson](https://www.linkedin.com/in/shabnamwatson/) with [Microsoft Fabric Apps](https://learn.microsoft.com/en-us/fabric/apps/overview) (preview).
 
-![Home screen: pick an exam and see your readiness for each one](docs/images/home.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/home-dark.png">
+  <img alt="Home screen: pick an exam and see your readiness for each one" src="docs/images/home-light.png">
+</picture>
 
 ## What it does
 
